@@ -8,6 +8,7 @@ gem 'rails', '3.2.13'
 gem 'pg'
 gem 'thin'
 gem 'websocket-rails'
+gem 'pry'
 
 
 # Gems used only for assets and not required
