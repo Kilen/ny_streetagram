@@ -5,7 +5,8 @@ class InstagramConduitController < ApplicationController
   end
 
   def show_receives
-    @receives = JSON.parse(Media.last.receives || { result: "no params" }.to_json)
+    media = Media.last
+    @receives = media.nil? ? { result: "no params" } : JSON.parse(media.receives) 
   end
 
   def handle_instagram_validation
