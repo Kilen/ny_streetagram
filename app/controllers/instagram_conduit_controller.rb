@@ -1,6 +1,11 @@
 class InstagramConduitController < ApplicationController
   def feed_reciver
-    binding.pry
+    media = Media.create!(receives: params.to_json)
+    render text: "Thank you"
+  end
+
+  def show_receives
+    @receives = JSON.parse(Media.last.receives || { result: "no params" }.to_json)
   end
 
   def handle_instagram_validation
