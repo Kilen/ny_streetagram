@@ -1,6 +1,7 @@
 class InstagramConduitController < ApplicationController
   def feed_reciver
-    media = Media.create!(receives: params.to_json)
+    data = ActiveSupport::JSON.decode request.body
+    media = Media.create!(receives: data.to_json)
     render text: "Thank you"
   end
 
