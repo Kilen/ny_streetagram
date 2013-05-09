@@ -1,0 +1,2 @@
+module InstagramConduitHelper
+end
