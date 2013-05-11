@@ -17,7 +17,20 @@ class Photo
     end
   end
 
+  def last(num)
+    num = min(num, self.length)
+    (self.length - num...self.length).each do |i|
+      yield @queue[i]
+    end
+  end
+
   def length
     @queue.length
+  end
+
+  private 
+
+  def min(x, y)
+    return x <= y ? x : y
   end
 end
