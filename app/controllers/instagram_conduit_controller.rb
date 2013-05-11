@@ -14,6 +14,8 @@ class InstagramConduitController < ApplicationController
   @@object_id = "0"
   def feed_receiver
     store_photo_infos
+
+    WebsocketRails[:photos].trigger "new", "new photos arrived"
     data = ""
     InMemoryDatabase.data.each do |photo|
       data += "###########" + photo["images"].to_s
