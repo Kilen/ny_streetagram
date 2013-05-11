@@ -1,0 +1,8 @@
+Current photos:
+
+<% @photos.last(50) do |photo| %>
+  <div>
+    <%= "url: #{photo["images"]["thumbnail"]}" %>
+    <%= image_tag photo["images"]["thumbnail"]["url"] %>
+  </div>
+<% end %>
