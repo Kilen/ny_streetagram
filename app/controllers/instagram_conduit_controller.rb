@@ -2,11 +2,12 @@ require "net/http"
 class InstagramConduitController < ApplicationController
   CLIENT_ID = "5a97d503088d45a8b0ba147771de3787"
   CLIENT_SECRET = "94078e484b09455f8936a3a8658d5ee2"
-  @@photos = Photo.new
+
+  InMemoryDatabase.store Photo.new if InMemoryDatabase.data.class != Photo
   
 
   def show_photos_in_map
-    @photos = @@photos
+    @photos = InMemoryDatabase.data
   end
 
   ################for debug
@@ -14,7 +15,7 @@ class InstagramConduitController < ApplicationController
   def feed_receiver
     store_photo_infos
     data = ""
-    @@photos.each do |photo|
+    InMemoryDatabase.data.each do |photo|
       data += "###########" + photo["images"].to_s
     end
     render text: data
@@ -65,7 +66,7 @@ class InstagramConduitController < ApplicationController
     if res.is_a? Net::HTTPSuccess
       data = MultiJson.decode(res.body)["data"]
       data.each do |item|
-        @@photos.enqueue item
+        InMemoryDatabase.data.enqueue item
       end
     end
   end
