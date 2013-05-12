@@ -1,8 +1,105 @@
-Current photos:
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  #map-canvas { width: 80%; height: 550px; }
+</style>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<script>
+  function initialize() {
+    var center = new Object();
+    center.lat = 36.058748164;
+    center.lng = -115.243206052;
+    var mapOptions = {
+      zoom: 12,
+      center: new google.maps.LatLng(center.lat, center.lng),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+    //mark center
+    marker = new google.maps.Marker({
+      position: new google.maps.LatLng(center.lat, center.lng),
+      map: map
+    });
+
+    overlay = new google.maps.OverlayView();
+    overlay.draw = function() {};
+    overlay.setMap(map);
+    google.maps.event.addListener(map, "tilesloaded", function() {
+      arrange_photos();
+    })
+    google.maps.event.addListener(map, "zoom_changed", function() {
+      arrange_photos();
+    })
+    google.maps.event.addListener(map, "drag", function() {
+      arrange_photos();
+    })
+  }
+
+  function pin_photo_to_map($photo, lat, lng)
+  {
+    var latlng = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
+    var containerPixel = overlay.getProjection().fromLatLngToContainerPixel(latlng);
+    $photo.css({ position: "absolute", left: containerPixel.x + "px", top: containerPixel.y + "px" });
+  }
+
+  function resize_photo($photo)
+  {
+    var len = $("#map-canvas").height() / 10
+    $photo.css({width: len + "px", height: len + "px" });
+  }
+
+  function arrange_photos()
+  {
+    $photos = $(".photo");
+    for(var i = 0; i < $photos.length; i++)
+    {
+      var $photo = $($photos[i]);
+      $photo.show();
+      var lat = $photo.attr("lat");
+      var lng = $photo.attr("lng");
+      resize_photo($photo);
+      pin_photo_to_map($photo, lat, lng);
+      hide_photo_if_out_of_board($photo);
+    }
+  }
+
+  function hide_photo_if_out_of_board($photo)
+  {
+    var map_x = $("#map-canvas").position().left;
+    var map_y = $("#map-canvas").position().top;
+    var map_width = $("#map-canvas").width();
+    var map_height = $("#map-canvas").height();
+    var photo_x = $photo.position().left;
+    var photo_y = $photo.position().top;
+    var photo_width = $photo.width();
+    var photo_height = $photo.height();
+    if(photo_x < map_x || photo_y < map_y || photo_x + photo_width > map_x + map_width ||
+      photo_y + photo_height > map_y + map_height)
+    {
+      $photo.hide();
+    }
+
+  }
+
+  //google.maps.event.addDomListener(window, 'load', initialize);
+
+</script>
+
+<div id="map-canvas"></div>
 
 <% @photos.last(50) do |photo| %>
-  <div>
-    <%= "url: #{photo["images"]["thumbnail"]}" %>
-    <%= image_tag photo["images"]["thumbnail"]["url"] %>
-  </div>
+  <%= image_tag photo["images"]["thumbnail"]["url"], 
+    class: "photo",
+    size: "#{photo['images']['thumbnail']['width']}x#{photo['images']['thumbnail']['height']}",
+    lat: "#{photo['location']['latitude']}",
+    lng: "#{photo['location']['longitude']}"
+  %>
 <% end %>
+
+<script type="text/javascript">
+  initialize();
+</script>
