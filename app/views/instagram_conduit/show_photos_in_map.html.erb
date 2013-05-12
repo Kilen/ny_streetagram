@@ -59,10 +59,8 @@
     {
       var $photo = $($photos[i]);
       $photo.show();
-      var lat = $photo.attr("lat");
-      var lng = $photo.attr("lng");
       resize_photo($photo);
-      pin_photo_to_map($photo, lat, lng);
+      pin_photo_to_map($photo, $photo.attr("lat"), $photo.attr("lng"));
       hide_photo_if_out_of_board($photo);
     }
   }
