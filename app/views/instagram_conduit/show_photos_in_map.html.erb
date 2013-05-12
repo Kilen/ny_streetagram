@@ -1,3 +1,17 @@
+
+
+<div id="map-canvas"></div>
+
+<script type="text/javascript">
+  var overlay = new google.maps.OverlayView();
+  overlay.draw = function() {};
+  overlay.setMap(map);
+
+  var proj = overlay.getProjection();
+  var pos = marker.getPosition();
+  var p = proj.fromLatLngToContainerPixel(pos);
+</script>
+
 Current photos:
 
 <% @photos.last(50) do |photo| %>
