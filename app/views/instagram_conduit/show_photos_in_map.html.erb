@@ -58,11 +58,31 @@
     for(var i = 0; i < $photos.length; i++)
     {
       var $photo = $($photos[i]);
+      $photo.show();
       var lat = $photo.attr("lat");
       var lng = $photo.attr("lng");
       resize_photo($photo);
       pin_photo_to_map($photo, lat, lng);
+      hide_photo_if_out_of_board($photo);
     }
+  }
+
+  function hide_photo_if_out_of_board($photo)
+  {
+    var map_x = $("#map-canvas").position().left;
+    var map_y = $("#map-canvas").position().top;
+    var map_width = $("#map-canvas").width();
+    var map_height = $("#map-canvas").height();
+    var photo_x = $photo.position().left;
+    var photo_y = $photo.position().top;
+    var photo_width = $photo.width();
+    var photo_height = $photo.height();
+    if(photo_x < map_x || photo_y < map_y || photo_x + photo_width > map_x + map_width ||
+      photo_y + photo_height > map_y + map_height)
+    {
+      $photo.hide();
+    }
+
   }
 
   //google.maps.event.addDomListener(window, 'load', initialize);
