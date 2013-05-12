@@ -8,31 +8,6 @@
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
 
-  <!--TODO move this to content_for -->
-  <style>
-    html, body, #map-canvas {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-  </style>
-  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-  <script>
-    var map;
-    function initialize() {
-      var mapOptions = {
-        zoom: 12,
-        center: new google.maps.LatLng(40.738933, -74.00116),
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      };
-      map = new google.maps.Map(document.getElementById('map-canvas'),
-      mapOptions);
-    }
-
-    google.maps.event.addDomListener(window, 'load', initialize);
-
-  </script>
-
 </head>
 <body>
 
