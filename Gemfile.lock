@@ -120,7 +120,7 @@ GEM
       execjs (>= 0.3.0)
       multi_json (~> 1.0, >= 1.0.2)
     websocket-driver (0.1.0)
-    websocket-rails (0.4.5)
+    websocket-rails (0.4.6)
       em-synchrony
       faye-websocket
       hiredis
