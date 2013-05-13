@@ -104,7 +104,7 @@
   function delete_earliest_photo_if_photo_count_larger_than(num)
   {
     $photo = $(".photo");
-    if($photo.count > num)
+    if($photo.length > num)
     {
       $($photo[0]).remove();
     }
@@ -148,10 +148,12 @@
     $photo.mouseleave(function(){
       $(this).animate({
         width: $(this).attr("origin_width"),
-        height: $(this).attr("origin_height")
+        height: $(this).attr("origin_height"),
+        zIndex: 2 
       });
     })
     $photo.mouseenter(function(){
+      $(this).css({zIndex: 10});
       $(this).animate({
         width: $(this).attr("width"),
         height: $(this).attr("height")
