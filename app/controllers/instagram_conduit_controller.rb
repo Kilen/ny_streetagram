@@ -15,7 +15,7 @@ class InstagramConduitController < ApplicationController
   def feed_receiver
     store_photo_infos
 
-    WebsocketRails[:photos].trigger "new", "new photos arrived"
+    WebsocketRails[:photos].trigger "new", pack_new_photo_infos
     data = ""
     InMemoryDatabase.data.each do |photo|
       data += "###########" + photo["images"].to_s
@@ -65,11 +65,21 @@ class InstagramConduitController < ApplicationController
     parameters = { client_id: CLIENT_ID }
     uri.query = URI.encode_www_form parameters
     res = Net::HTTP.get_response uri
+    @new_item_count = 0
     if res.is_a? Net::HTTPSuccess
       data = MultiJson.decode(res.body)["data"]
       data.each do |item|
+        @new_item_count += 1
         InMemoryDatabase.data.enqueue item
       end
     end
+  end
+
+  def pack_new_photo_infos
+    package = []
+    InMemoryDatabase.data.last(@new_item_count || 0) do |photo|
+      package << photo
+    end
+    package.to_json
   end
 end
