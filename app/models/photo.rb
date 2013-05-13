@@ -2,7 +2,7 @@ class Photo < ActiveRecord::Base
   attr_accessible :info
 
   def info= obj
-    self[:info] = obj.to_s
+    self[:info] = obj.to_json
   end
 
   def info

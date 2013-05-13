@@ -21,7 +21,7 @@ class InstagramConduitController < ApplicationController
     #WebsocketRails[:photos].trigger "new", pack_new_photo_infos
     data = ""
     Photo.all.each do |photo|
-      data += "###########" + photo.info["caption"]["text"]
+      data += "###########" + photo.info["location"].to_s
     end
     render text: data
   end
