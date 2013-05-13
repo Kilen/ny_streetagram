@@ -31,7 +31,7 @@ class InstagramConduitController < ApplicationController
   end
   #########################
 
-  def feed_receiver_xxx
+  def feed_receiver
     if updates_from_instagram? && is_receiver_on?
       fetch_new_photo_info
       @@object_id = @json["object_id"]
@@ -53,7 +53,7 @@ class InstagramConduitController < ApplicationController
   end
 
   def is_receiver_on?
-    false
+    true
   end
 
   def fetch_new_photo_info
@@ -63,8 +63,8 @@ class InstagramConduitController < ApplicationController
   end
 
   def store_photo_infos
-    uri = URI "http://localhost:4000/instagram/photo_infos" #my local server for debugging
-    #uri = URI "https://api.instagram.com/v1/geographies/#{@json['object_id']}/media/recent"
+    #uri = URI "http://localhost:4000/instagram/photo_infos" #my local server for debugging
+    uri = URI "https://api.instagram.com/v1/geographies/#{@json['object_id']}/media/recent"
     parameters = { client_id: CLIENT_ID }
     uri.query = URI.encode_www_form parameters
     res = Net::HTTP.get_response uri
