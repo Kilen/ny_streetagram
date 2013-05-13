@@ -89,12 +89,12 @@
 
 <div id="map-canvas"></div>
 
-<% @photos.last(50) do |photo| %>
-  <%= image_tag photo["images"]["thumbnail"]["url"], 
+<% @photos.each do |photo| %>
+  <%= image_tag photo.info["images"]["thumbnail"]["url"], 
     class: "photo",
-    size: "#{photo['images']['thumbnail']['width']}x#{photo['images']['thumbnail']['height']}",
-    lat: "#{photo['location']['latitude']}",
-    lng: "#{photo['location']['longitude']}"
+    size: "#{photo.info['images']['thumbnail']['width']}x#{photo.info['images']['thumbnail']['height']}",
+    lat: "#{photo.info['location']['latitude']}",
+    lng: "#{photo.info['location']['longitude']}"
   %>
 <% end %>
 

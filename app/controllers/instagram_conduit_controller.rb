@@ -3,11 +3,14 @@ class InstagramConduitController < ApplicationController
   CLIENT_ID = "5a97d503088d45a8b0ba147771de3787"
   CLIENT_SECRET = "94078e484b09455f8936a3a8658d5ee2"
 
-  InMemoryDatabase.store Photo.new if InMemoryDatabase.data.class != Photo
-  
 
   def show_photos_in_map
-    @photos = InMemoryDatabase.data
+    session[:cur_photo_count] = Photo.count
+    @photos = Photo.last 50
+  end
+
+  def new_photos
+    render json: pack_new_photo_infos
   end
 
   ################for debug
@@ -17,8 +20,8 @@ class InstagramConduitController < ApplicationController
 
     #WebsocketRails[:photos].trigger "new", pack_new_photo_infos
     data = ""
-    InMemoryDatabase.data.each do |photo|
-      data += "###########" + photo["images"].to_s
+    Photo.all.each do |photo|
+      data += "###########" + photo.info["caption"]["text"]
     end
     render text: data
   end
@@ -65,21 +68,27 @@ class InstagramConduitController < ApplicationController
     parameters = { client_id: CLIENT_ID }
     uri.query = URI.encode_www_form parameters
     res = Net::HTTP.get_response uri
-    @new_item_count = 0
     if res.is_a? Net::HTTPSuccess
       data = MultiJson.decode(res.body)["data"]
       data.each do |item|
-        @new_item_count += 1
-        InMemoryDatabase.data.enqueue item
+        Photo.create! info: item
       end
     end
   end
 
   def pack_new_photo_infos
     package = []
-    InMemoryDatabase.data.last(@new_item_count || 0) do |photo|
-      package << photo
+    Photo.last(new_record_count).each do |photo|
+      package << photo.info
     end
     package.to_json
   end
+
+  def new_record_count
+    session[:cur_photo_count] = session[:cur_photo_count] || 0
+    count = Photo.count - session[:cur_photo_count]
+    session[:cur_photo_count] += count
+    count
+  end
 end
+
