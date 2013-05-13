@@ -30,6 +30,7 @@
     overlay.setMap(map);
     google.maps.event.addListener(map, "tilesloaded", function() {
       arrange_photos();
+      setInterval(fetch_new_photos, 10000);
     })
     google.maps.event.addListener(map, "zoom_changed", function() {
       arrange_photos();
@@ -100,6 +101,26 @@
 
 <script type="text/javascript">
   initialize();
+
+  function fetch_new_photos()
+  {
+    console.log("fetching...")
+    $.ajax({
+      url: "/fetch_new_photos",
+      success: function(photos){
+        console.log("new photo(s) arrived");
+
+        for(var i = 0; i < photos.length; i++)
+        {
+          create_new_image(photos[i]);
+        }
+        arrange_photos();
+      },
+      error: function(){
+        console.log("fetch new photos error");
+      }
+    })
+  }
 
   //var dispatcher = new WebSocketRails('localhost:3000/websocket');
   //var channel = dispatcher.subscribe('photos');
