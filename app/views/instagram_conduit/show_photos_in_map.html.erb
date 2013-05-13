@@ -30,6 +30,7 @@
     overlay.setMap(map);
     google.maps.event.addListener(map, "tilesloaded", function() {
       arrange_photos();
+      setInterval(fetch_new_photos, 10000);
     })
     google.maps.event.addListener(map, "zoom_changed", function() {
       arrange_photos();
@@ -89,32 +90,51 @@
 
 <div id="map-canvas"></div>
 
-<% @photos.last(50) do |photo| %>
-  <%= image_tag photo["images"]["thumbnail"]["url"], 
+<% @photos.each do |photo| %>
+  <%= image_tag photo.info["images"]["thumbnail"]["url"], 
     class: "photo",
-    size: "#{photo['images']['thumbnail']['width']}x#{photo['images']['thumbnail']['height']}",
-    lat: "#{photo['location']['latitude']}",
-    lng: "#{photo['location']['longitude']}"
+    size: "#{photo.info['images']['thumbnail']['width']}x#{photo.info['images']['thumbnail']['height']}",
+    lat: "#{photo.info['location']['latitude']}",
+    lng: "#{photo.info['location']['longitude']}"
   %>
 <% end %>
 
 <script type="text/javascript">
   initialize();
-  // connect to server like normal
-  var dispatcher = new WebSocketRails('localhost:3000/websocket');
-  // subscribe to the channel
-  var channel = dispatcher.subscribe('photos');
-  channel = dispatcher.subscribe('photos');
-  channel.bind('new', function(photos) {
-    console.log("new photo arrived");
 
-    new_photos = JSON.parse(photos);
-    for(var i = 0; i < new_photos.length; i++)
-    {
-      create_new_image(new_photos[i]);
-    }
-    arrange_photos();
-  });
+  function fetch_new_photos()
+  {
+    console.log("fetching...")
+    $.ajax({
+      url: "/fetch_new_photos",
+      success: function(photos){
+        console.log("new photo(s) arrived");
+
+        for(var i = 0; i < photos.length; i++)
+        {
+          create_new_image(photos[i]);
+        }
+        arrange_photos();
+      },
+      error: function(){
+        console.log("fetch new photos error");
+      }
+    })
+  }
+
+  //var dispatcher = new WebSocketRails('localhost:3000/websocket');
+  //var channel = dispatcher.subscribe('photos');
+  //channel = dispatcher.subscribe('photos');
+  //channel.bind('new', function(photos) {
+  //  console.log("new photo arrived");
+
+  //  new_photos = JSON.parse(photos);
+  //  for(var i = 0; i < new_photos.length; i++)
+  //  {
+  //    create_new_image(new_photos[i]);
+  //  }
+  //  arrange_photos();
+  //});
 
   function create_new_image(photo)
   {
