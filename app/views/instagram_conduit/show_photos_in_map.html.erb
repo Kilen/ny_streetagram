@@ -7,8 +7,22 @@
   #map-canvas { width: 80%; height: 550px; }
 </style>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-<script>
-  function initialize() {
+<div id="map-canvas"></div>
+
+<% @photos.each do |photo| %>
+  <%= image_tag photo.info["images"]["thumbnail"]["url"], 
+    class: "photo",
+    size: "#{photo.info['images']['thumbnail']['width']}x#{photo.info['images']['thumbnail']['height']}",
+    lat: "#{photo.info['location']['latitude']}",
+    lng: "#{photo.info['location']['longitude']}"
+  %>
+<% end %>
+
+<script type="text/javascript">
+  initialize();
+
+  function initialize() 
+  {
     var center = new Object();
     center.lat = 40.738933;
     center.lng = -74.00116;
@@ -29,6 +43,11 @@
     overlay.draw = function() {};
     overlay.setMap(map);
     google.maps.event.addListener(map, "tilesloaded", function() {
+      $photos = $(".photo");
+      for(var i = 0; i < $photos.length; i++)
+      {
+        bind_effect_to($($photos[i]));
+      }
       arrange_photos();
       setInterval(fetch_new_photos, 10000);
     })
@@ -38,19 +57,7 @@
     google.maps.event.addListener(map, "drag", function() {
       arrange_photos();
     })
-  }
-
-  function pin_photo_to_map($photo, lat, lng)
-  {
-    var latlng = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
-    var containerPixel = overlay.getProjection().fromLatLngToContainerPixel(latlng);
-    $photo.css({ position: "absolute", left: containerPixel.x + "px", top: containerPixel.y + "px" });
-  }
-
-  function resize_photo($photo)
-  {
-    var len = $("#map-canvas").height() / 10
-    $photo.css({width: len + "px", height: len + "px" });
+    $(".photo").hide();
   }
 
   function arrange_photos()
@@ -61,9 +68,20 @@
       var $photo = $($photos[i]);
       $photo.show();
       resize_photo($photo);
-      pin_photo_to_map($photo, $photo.attr("lat"), $photo.attr("lng"));
+      pin_photo_to_map($photo);
       hide_photo_if_out_of_board($photo);
+      delete_earliest_photo_if_photo_count_larger_than(50);
     }
+  }
+
+  function resize_photo($photo)
+  {
+    var len = $("#map-canvas").height() / 10;
+    $photo.css({ width: len + "px", height: len + "px" });
+    $photo.attr({
+      "origin_width": parseInt($photo.css("width")),
+      "origin_height": parseInt($photo.css("height"))
+    });
   }
 
   function hide_photo_if_out_of_board($photo)
@@ -81,38 +99,26 @@
     {
       $photo.hide();
     }
-
   }
 
-  //google.maps.event.addDomListener(window, 'load', initialize);
-
-</script>
-
-<div id="map-canvas"></div>
-
-<% @photos.each do |photo| %>
-  <%= image_tag photo.info["images"]["thumbnail"]["url"], 
-    class: "photo",
-    size: "#{photo.info['images']['thumbnail']['width']}x#{photo.info['images']['thumbnail']['height']}",
-    lat: "#{photo.info['location']['latitude']}",
-    lng: "#{photo.info['location']['longitude']}"
-  %>
-<% end %>
-
-<script type="text/javascript">
-  initialize();
+  function delete_earliest_photo_if_photo_count_larger_than(num)
+  {
+    $photo = $(".photo");
+    if($photo.count > num)
+    {
+      $($photo[0]).remove();
+    }
+  }
 
   function fetch_new_photos()
   {
-    console.log("fetching...")
     $.ajax({
       url: "/fetch_new_photos",
       success: function(photos){
-        console.log("new photo(s) arrived");
-
         for(var i = 0; i < photos.length; i++)
         {
           create_new_image(photos[i]);
+          bind_effect_to($(photos[i]))
         }
         arrange_photos();
       },
@@ -121,20 +127,6 @@
       }
     })
   }
-
-  //var dispatcher = new WebSocketRails('localhost:3000/websocket');
-  //var channel = dispatcher.subscribe('photos');
-  //channel = dispatcher.subscribe('photos');
-  //channel.bind('new', function(photos) {
-  //  console.log("new photo arrived");
-
-  //  new_photos = JSON.parse(photos);
-  //  for(var i = 0; i < new_photos.length; i++)
-  //  {
-  //    create_new_image(new_photos[i]);
-  //  }
-  //  arrange_photos();
-  //});
 
   function create_new_image(photo)
   {
@@ -147,5 +139,41 @@
         lng: photo.location.longitude
       });
       $new_photo.appendTo("body");
+      bind_effect_to($new_photo);
+      $new_photo.hide();
+  }
+
+  function bind_effect_to($photo)
+  {
+    $photo.mouseleave(function(){
+      $(this).animate({
+        width: $(this).attr("origin_width"),
+        height: $(this).attr("origin_height")
+      });
+    })
+    $photo.mouseenter(function(){
+      $(this).animate({
+        width: $(this).attr("width"),
+        height: $(this).attr("height")
+      }, 1000);
+    });
+  }
+
+  function reset_position($photo)
+  {
+    $photo.css({ position: "absolute", left: "0px", top: "0px" });
+  }
+
+  function pin_photo_to_map($photo)
+  {
+    var containerPixel = latlng_to_pixel($photo);
+    $photo.css({ position: "absolute", left: containerPixel.x + "px", top: containerPixel.y + "px" });
+  }
+
+
+  function latlng_to_pixel($photo)
+  {
+    var latlng = new google.maps.LatLng(parseFloat($photo.attr("lat")), parseFloat($photo.attr("lng")));
+    return overlay.getProjection().fromLatLngToContainerPixel(latlng);
   }
 </script>
